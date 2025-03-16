@@ -17,12 +17,12 @@ namespace DistributedSimulation.View
         {
             InitializeComponent();
 
-            // Iniciar el servidor en segundo plano
-            StartWebSocketServerAsync();
-
             // Crear y asignar el ViewModel
             _viewModel = new MainViewModel();
             DataContext = _viewModel;
+
+            // Iniciar el servidor en segundo plano
+            StartWebSocketServerAsync();
 
             // Configurar el auto-scroll para el log de mensajes
             if (scrollViewer != null)
@@ -42,6 +42,18 @@ namespace DistributedSimulation.View
             try
             {
                 _webSocketServer = new WebSocketServer();
+
+                // Configurar evento para mostrar mensajes del servidor
+                _webSocketServer.OnServerMessageReceived += (message) =>
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        if (_viewModel != null && _viewModel.Messages != null)
+                        {
+                            _viewModel.Messages.Add($"[{DateTime.Now:HH:mm:ss.fff}] Servidor: {message}");
+                        }
+                    });
+                };
 
                 // Iniciar servidor en hilo separado
                 await Task.Run(async () =>
@@ -71,7 +83,13 @@ namespace DistributedSimulation.View
             // Limpiar recursos y cerrar conexiones
             if (_viewModel != null)
             {
-                _viewModel.CleanupAsync();
+                _viewModel.CleanupAsync().Wait();
+            }
+
+            // Detener el servidor
+            if (_webSocketServer != null && _serverStarted)
+            {
+                _webSocketServer.StopServer();
             }
         }
     }

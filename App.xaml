@@ -4,4 +4,9 @@
              xmlns:local="clr-namespace:DistributedSimulation"
              xmlns:converters="clr-namespace:DistributedSimulation.View.Converters"
              StartupUri="View/MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <converters:ResourceStateToColorConverter x:Key="ResourceStateToColorConverter"/>
+        </ResourceDictionary>
+    </Application.Resources>
 </Application>
